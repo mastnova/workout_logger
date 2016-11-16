@@ -5,7 +5,8 @@ var AddForm = require('./AddForm');
 
 function getAppState(){
   return {
-    showForm: AppStore.getShowForm()
+    showForm: AppStore.getShowForm(),
+    workouts: AppStore.getWorkouts()
   }
 }
 

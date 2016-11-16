@@ -6,7 +6,7 @@ var AppAPI = require('../utils/AppAPI.js');
 
 var CHANGE_EVENT = 'change';
 
-var _items = [];
+var _workouts = [];
 var _showForm = false;
 
 var AppStore = assign({}, EventEmitter.prototype, {
@@ -15,6 +15,12 @@ var AppStore = assign({}, EventEmitter.prototype, {
   },
   getShowForm: function(){
     return _showForm;
+  },
+  addWorkout: function(workout){
+    _workouts.push(workout);
+  },
+  getWorkouts: function(){
+    return _workouts;
   },
   emitChange: function(){
     this.emit(CHANGE_EVENT);
@@ -33,6 +39,10 @@ AppDispatcher.register(function(payload){
   switch(action.actionType){
     case AppConstants.SHOW_FORM:
       AppStore.showForm();
+      break;
+    case AppConstants.ADD_WORKOUT:
+      AppStore.addWorkout(action.workout);
+      AppAPI.saveWorkout(action.workout);
       break;
     default:
       return false;
