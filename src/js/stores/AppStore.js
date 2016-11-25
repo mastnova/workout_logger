@@ -22,6 +22,12 @@ var AppStore = assign({}, EventEmitter.prototype, {
   getWorkouts: function(){
     return _workouts;
   },
+  receiveWorkouts: function(workouts){
+    _workouts = workouts;
+  },
+  removeWorkout: function(workoutId){
+    _workouts = _workouts.filter(workout => workout.id !== workoutId);
+  },
   emitChange: function(){
     this.emit(CHANGE_EVENT);
   },
@@ -43,6 +49,13 @@ AppDispatcher.register(function(payload){
     case AppConstants.ADD_WORKOUT:
       AppStore.addWorkout(action.workout);
       AppAPI.saveWorkout(action.workout);
+      break;
+    case AppConstants.RECEIVE_WORKOUTS:
+      AppStore.receiveWorkouts(action.workouts);
+      break;
+    case AppConstants.REMOVE_WORKOUT:
+      AppStore.removeWorkout(action.workoutId);
+      AppAPI.removeWorkout(action.workoutId);
       break;
     default:
       return false;

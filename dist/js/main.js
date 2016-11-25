@@ -19769,11 +19769,25 @@ var AppActions = {
       actionType: AppConstants.ADD_WORKOUT,
       workout: workout
     });
+  },
+
+  receiveWorkouts: function(workouts){
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.RECEIVE_WORKOUTS,
+      workouts: workouts
+    });
+  },
+
+  removeWorkout: function(id){
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.REMOVE_WORKOUT,
+      workoutId: id
+    })
   }
 }
 
 module.exports = AppActions;
-},{"../constants/AppConstants":167,"../dispatcher/AppDispatcher":168}],165:[function(require,module,exports){
+},{"../constants/AppConstants":169,"../dispatcher/AppDispatcher":170}],165:[function(require,module,exports){
 var React = require('react');
 var AppActions = require('../actions/AppActions');
 
@@ -19825,6 +19839,7 @@ var React = require('react');
 var AppActions = require('../actions/AppActions');
 var AppStore = require('../stores/AppStore');
 var AddForm = require('./AddForm');
+var WorkoutsList = require('./WorkoutsList');
 
 function getAppState(){
   return {
@@ -19863,7 +19878,7 @@ var App = React.createClass({displayName: "App",
             : '', 
         
         React.createElement("br", null), 
-        "WORKOUTS", 
+        React.createElement(WorkoutsList, {workouts: this.state.workouts}), 
         React.createElement("br", null)
       )
     );
@@ -19875,12 +19890,61 @@ var App = React.createClass({displayName: "App",
 });
 
 module.exports = App;
-},{"../actions/AppActions":164,"../stores/AppStore":170,"./AddForm":165,"react":163}],167:[function(require,module,exports){
+},{"../actions/AppActions":164,"../stores/AppStore":172,"./AddForm":165,"./WorkoutsList":168,"react":163}],167:[function(require,module,exports){
+var React = require('react');
+var Workout = require('./Workout');
+var AppActions = require('../actions/AppActions');
+
+var WorkoutsList = React.createClass({displayName: "WorkoutsList",
+  render: function(){
+    var workout = this.props.workout;
+    var miles = '';
+    if (workout.miles) {
+      miles = ` | ${workout.miles} Miles`;
+    }
+    return(
+      React.createElement("li", {className: "list-group-item"}, 
+        this.props.workout.type, " - ", this.props.workout.minutes, " Minutes ", miles, 
+        React.createElement("button", {className: "btn btn-danger btn-xs btn-remove", onClick: this.removeWorkout.bind(this, workout.id)}, "X")
+      )
+    );
+  },
+
+  removeWorkout: function(id){
+    AppActions.removeWorkout(id);
+  }
+});
+
+module.exports = WorkoutsList;
+
+},{"../actions/AppActions":164,"./Workout":167,"react":163}],168:[function(require,module,exports){
+var React = require('react');
+var Workout = require('./Workout');
+
+var WorkoutsList = React.createClass({displayName: "WorkoutsList",
+  render: function(){
+    return(
+      React.createElement("ul", {className: "list-group"}, 
+        
+          this.props.workouts.map((workout, i) => {
+            return React.createElement(Workout, {workout: workout, key: i})
+          })
+        
+      )
+    );
+  }
+});
+
+module.exports = WorkoutsList;
+
+},{"./Workout":167,"react":163}],169:[function(require,module,exports){
 module.exports = {
   SHOW_FORM: 'SHOW_FORM',
-  ADD_WORKOUT: 'ADD_WORKOUT'
+  ADD_WORKOUT: 'ADD_WORKOUT',
+  RECEIVE_WORKOUTS: 'RECEIVE_WORKOUTS',
+  REMOVE_WORKOUT: 'REMOVE_WORKOUT'
 }
-},{}],168:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 var assign = require('object-assign');
 
@@ -19895,18 +19959,19 @@ var AppDispatcher = assign(new Dispatcher(),{
 });
 
 module.exports = AppDispatcher;
-},{"flux":29,"object-assign":32}],169:[function(require,module,exports){
+},{"flux":29,"object-assign":32}],171:[function(require,module,exports){
 var App = require('./components/App');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var AppAPI = require('./utils/appAPI.js');
 
+AppAPI.getWorkouts();
 
 ReactDOM.render(
   React.createElement(App, null),
   document.getElementById('app')
 );
-},{"./components/App":166,"./utils/appAPI.js":172,"react":163,"react-dom":34}],170:[function(require,module,exports){
+},{"./components/App":166,"./utils/appAPI.js":174,"react":163,"react-dom":34}],172:[function(require,module,exports){
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
 var EventEmitter = require('events').EventEmitter;
@@ -19931,6 +19996,12 @@ var AppStore = assign({}, EventEmitter.prototype, {
   getWorkouts: function(){
     return _workouts;
   },
+  receiveWorkouts: function(workouts){
+    _workouts = workouts;
+  },
+  removeWorkout: function(workoutId){
+    _workouts = _workouts.filter(workout => workout.id !== workoutId);
+  },
   emitChange: function(){
     this.emit(CHANGE_EVENT);
   },
@@ -19953,6 +20024,13 @@ AppDispatcher.register(function(payload){
       AppStore.addWorkout(action.workout);
       AppAPI.saveWorkout(action.workout);
       break;
+    case AppConstants.RECEIVE_WORKOUTS:
+      AppStore.receiveWorkouts(action.workouts);
+      break;
+    case AppConstants.REMOVE_WORKOUT:
+      AppStore.removeWorkout(action.workoutId);
+      AppAPI.removeWorkout(action.workoutId);
+      break;
     default:
       return false;
   }
@@ -19962,7 +20040,7 @@ AppDispatcher.register(function(payload){
 });
 
 module.exports = AppStore;
-},{"../constants/AppConstants":167,"../dispatcher/AppDispatcher":168,"../utils/AppAPI.js":171,"events":1,"object-assign":32}],171:[function(require,module,exports){
+},{"../constants/AppConstants":169,"../dispatcher/AppDispatcher":170,"../utils/AppAPI.js":173,"events":1,"object-assign":32}],173:[function(require,module,exports){
 var AppActions = require('../actions/AppActions');
 
 module.exports = {
@@ -19971,9 +20049,20 @@ module.exports = {
     workouts = workouts || [];
     workouts.push(workout);
     localStorage.setItem('workouts', JSON.stringify(workouts));
+  },
+
+  getWorkouts: function(){
+    var workouts = JSON.parse(localStorage.getItem('workouts'));
+    AppActions.receiveWorkouts(workouts);
+  },
+
+  removeWorkout: function(workoutId){
+    var workouts = JSON.parse(localStorage.getItem('workouts'));
+    workouts = workouts.filter(workout => workout.id !== workoutId);
+    localStorage.setItem('workouts', JSON.stringify(workouts));
   }
 }
-},{"../actions/AppActions":164}],172:[function(require,module,exports){
+},{"../actions/AppActions":164}],174:[function(require,module,exports){
 var AppActions = require('../actions/AppActions');
 
 module.exports = {
@@ -19982,6 +20071,17 @@ module.exports = {
     workouts = workouts || [];
     workouts.push(workout);
     localStorage.setItem('workouts', JSON.stringify(workouts));
+  },
+
+  getWorkouts: function(){
+    var workouts = JSON.parse(localStorage.getItem('workouts'));
+    AppActions.receiveWorkouts(workouts);
+  },
+
+  removeWorkout: function(workoutId){
+    var workouts = JSON.parse(localStorage.getItem('workouts'));
+    workouts = workouts.filter(workout => workout.id !== workoutId);
+    localStorage.setItem('workouts', JSON.stringify(workouts));
   }
 }
-},{"../actions/AppActions":164}]},{},[169]);
+},{"../actions/AppActions":164}]},{},[171]);

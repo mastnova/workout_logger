@@ -2,6 +2,7 @@ var React = require('react');
 var AppActions = require('../actions/AppActions');
 var AppStore = require('../stores/AppStore');
 var AddForm = require('./AddForm');
+var WorkoutsList = require('./WorkoutsList');
 
 function getAppState(){
   return {
@@ -40,7 +41,7 @@ var App = React.createClass({
             : ''
         }
         <br />
-        WORKOUTS
+        <WorkoutsList workouts={this.state.workouts} />
         <br />
       </div>
     );
