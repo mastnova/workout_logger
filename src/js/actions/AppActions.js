@@ -2,9 +2,9 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
 
 var AppActions = {
-  showForm: function(){
+  toggleForm: function(){
     AppDispatcher.handleViewAction({
-      actionType: AppConstants.SHOW_FORM
+      actionType: AppConstants.TOGGLE_FORM
     });
   },
 

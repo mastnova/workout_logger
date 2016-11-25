@@ -19758,9 +19758,9 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
 
 var AppActions = {
-  showForm: function(){
+  toggleForm: function(){
     AppDispatcher.handleViewAction({
-      actionType: AppConstants.SHOW_FORM
+      actionType: AppConstants.TOGGLE_FORM
     });
   },
 
@@ -19810,7 +19810,7 @@ var AddForm = React.createClass({displayName: "AddForm",
         React.createElement("div", {className: "form-group"}, 
           React.createElement("input", {type: "text", className: "form-control", ref: "miles", placeholder: "miles"})
         ), 
-        React.createElement("button", {type: "submit", className: "btn btn-default btn-block"}, "Log Workout")
+        React.createElement("button", {type: "submit", className: "btn btn-success btn-block"}, "Log Workout")
       )
     );
   },
@@ -19861,25 +19861,28 @@ var App = React.createClass({displayName: "App",
     AppStore.removeChangeListener(this._onChange);
   },
 
-  onShowFormClick: function(e){
+  toggleForm: function(e){
     e.preventDefault();
-    AppActions.showForm();
+    AppActions.toggleForm();
   },
 
   render: function(){
+    if (this.state.showForm) {
+      var FormButton = React.createElement("button", {onClick: this.toggleForm, className: "btn btn-info btn-block"}, "Close Form");
+      var Form = React.createElement(AddForm, null);
+    } else {
+      var FormButton = React.createElement("button", {onClick: this.toggleForm, className: "btn btn-primary btn-block"}, "Add Workout");
+      var Form = '';
+    }
+
     return(
       React.createElement("div", null, 
         React.createElement("h1", {className: "text-center page-header"}, "WorkoutLogger"), 
-        React.createElement("a", {onClick: this.onShowFormClick, href: "#", className: "btn btn-primary btn-block"}, "Add Workout"), 
+        FormButton, 
         React.createElement("br", null), 
-        
-          (this.state.showForm)
-            ? React.createElement(AddForm, null)
-            : '', 
-        
+        Form, 
         React.createElement("br", null), 
-        React.createElement(WorkoutsList, {workouts: this.state.workouts}), 
-        React.createElement("br", null)
+        React.createElement(WorkoutsList, {workouts: this.state.workouts})
       )
     );
   },
@@ -19898,13 +19901,17 @@ var AppActions = require('../actions/AppActions');
 var WorkoutsList = React.createClass({displayName: "WorkoutsList",
   render: function(){
     var workout = this.props.workout;
+    var minutes = '';
     var miles = '';
+    if (workout.minutes) {
+      minutes = `- ${workout.minutes} Minutes`;
+    }
     if (workout.miles) {
-      miles = ` | ${workout.miles} Miles`;
+      miles = `| ${workout.miles} Miles`;
     }
     return(
       React.createElement("li", {className: "list-group-item"}, 
-        this.props.workout.type, " - ", this.props.workout.minutes, " Minutes ", miles, 
+        `${workout.type} ${minutes} ${miles}`, 
         React.createElement("button", {className: "btn btn-danger btn-xs btn-remove", onClick: this.removeWorkout.bind(this, workout.id)}, "X")
       )
     );
@@ -19939,7 +19946,7 @@ module.exports = WorkoutsList;
 
 },{"./Workout":167,"react":163}],169:[function(require,module,exports){
 module.exports = {
-  SHOW_FORM: 'SHOW_FORM',
+  TOGGLE_FORM: 'TOGGLE_FORM',
   ADD_WORKOUT: 'ADD_WORKOUT',
   RECEIVE_WORKOUTS: 'RECEIVE_WORKOUTS',
   REMOVE_WORKOUT: 'REMOVE_WORKOUT'
@@ -19984,8 +19991,8 @@ var _workouts = [];
 var _showForm = false;
 
 var AppStore = assign({}, EventEmitter.prototype, {
-  showForm: function(){
-    _showForm = true;
+  toggleForm: function(){
+    _showForm = !_showForm;
   },
   getShowForm: function(){
     return _showForm;
@@ -20017,8 +20024,8 @@ AppDispatcher.register(function(payload){
   var action = payload.action;
 
   switch(action.actionType){
-    case AppConstants.SHOW_FORM:
-      AppStore.showForm();
+    case AppConstants.TOGGLE_FORM:
+      AppStore.toggleForm();
       break;
     case AppConstants.ADD_WORKOUT:
       AppStore.addWorkout(action.workout);

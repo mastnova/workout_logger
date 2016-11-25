@@ -5,13 +5,17 @@ var AppActions = require('../actions/AppActions');
 var WorkoutsList = React.createClass({
   render: function(){
     var workout = this.props.workout;
+    var minutes = '';
     var miles = '';
+    if (workout.minutes) {
+      minutes = `- ${workout.minutes} Minutes`;
+    }
     if (workout.miles) {
-      miles = ` | ${workout.miles} Miles`;
+      miles = `| ${workout.miles} Miles`;
     }
     return(
       <li className="list-group-item">
-        {this.props.workout.type} - {this.props.workout.minutes} Minutes {miles}
+        {`${workout.type} ${minutes} ${miles}`}
         <button className="btn btn-danger btn-xs btn-remove" onClick={this.removeWorkout.bind(this, workout.id)}>X</button>
       </li>
     );

@@ -1,3 +1,7 @@
 .btn-remove {
   float: right;
 }
+
+.btn {
+  outline: none !important;
+}

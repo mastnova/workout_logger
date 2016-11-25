@@ -10,8 +10,8 @@ var _workouts = [];
 var _showForm = false;
 
 var AppStore = assign({}, EventEmitter.prototype, {
-  showForm: function(){
-    _showForm = true;
+  toggleForm: function(){
+    _showForm = !_showForm;
   },
   getShowForm: function(){
     return _showForm;
@@ -43,8 +43,8 @@ AppDispatcher.register(function(payload){
   var action = payload.action;
 
   switch(action.actionType){
-    case AppConstants.SHOW_FORM:
-      AppStore.showForm();
+    case AppConstants.TOGGLE_FORM:
+      AppStore.toggleForm();
       break;
     case AppConstants.ADD_WORKOUT:
       AppStore.addWorkout(action.workout);

@@ -24,25 +24,28 @@ var App = React.createClass({
     AppStore.removeChangeListener(this._onChange);
   },
 
-  onShowFormClick: function(e){
+  toggleForm: function(e){
     e.preventDefault();
-    AppActions.showForm();
+    AppActions.toggleForm();
   },
 
   render: function(){
+    if (this.state.showForm) {
+      var FormButton = <button onClick={this.toggleForm} className="btn btn-info btn-block">Close Form</button>;
+      var Form = <AddForm />;
+    } else {
+      var FormButton = <button onClick={this.toggleForm} className="btn btn-primary btn-block">Add Workout</button>;
+      var Form = '';
+    }
+
     return(
       <div>
         <h1 className="text-center page-header">WorkoutLogger</h1>
-        <a onClick={this.onShowFormClick} href="#" className="btn btn-primary btn-block">Add Workout</a>
+        {FormButton}
         <br />
-        {
-          (this.state.showForm)
-            ? <AddForm />
-            : ''
-        }
+        {Form}
         <br />
         <WorkoutsList workouts={this.state.workouts} />
-        <br />
       </div>
     );
   },

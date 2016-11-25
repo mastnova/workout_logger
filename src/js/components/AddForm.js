@@ -20,7 +20,7 @@ var AddForm = React.createClass({
         <div className="form-group">
           <input type="text" className="form-control" ref="miles" placeholder="miles" />
         </div>
-        <button type="submit" className="btn btn-default btn-block">Log Workout</button>
+        <button type="submit" className="btn btn-success btn-block">Log Workout</button>
       </form>
     );
   },
